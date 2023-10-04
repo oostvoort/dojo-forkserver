@@ -1,0 +1,8 @@
+/server/target/
+/server/.env
+/dashboard/.env
+/server/database/indexer.db
+/server/database/indexer.db-shm
+/server/database/indexer.db-wal
+/server/server
+

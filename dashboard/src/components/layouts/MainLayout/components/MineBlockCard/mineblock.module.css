@@ -1,0 +1,8 @@
+.playing {
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.notPlaying {
+    opacity: 0.2;
+}
