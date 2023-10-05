@@ -43,7 +43,19 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME}}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: push README to Dockerhub
+        uses: christian-korneck/update-container-description-action@v1
+        env:
+          DOCKER_USER: ${{ vars.DOCKERHUB_USERNAME}}
+          DOCKER_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
 
+        with:
+          destination_container_repo: oostvoort/dojo-forkserver
+          provider: dockerhub
+          short_description: ''
+          readme_file: 'README.md'
+
+            
       - name: Build, tag, and push image
         id: build-image
         run: |
@@ -51,12 +63,7 @@ jobs:
           docker push $REGISTRY/$PROJECTNAME:latest
           docker push $REGISTRY/$PROJECTNAME:${VERSION}
 
-
     
-      - name: Push README to Docker Hub
-        run: |
-          curl -s -H "Authorization: JWT ${{ secrets.DOCKERHUB_TOKEN }}" -X PATCH --data-binary "README.md" https://hub.docker.com/v2/repositories/${REGISTRY}/${PROJECTNAME}/
-
       - name: Deploy to ArgoCD
         id: deploy-image
         run: |
