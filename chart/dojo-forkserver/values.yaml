@@ -9,11 +9,25 @@ webappContainerService:
   type: ClusterIP  # {{ .Values.webappContainerService.type }}
   port: 3000       # {{ .Values.webappContainerService.port }}
 
+katanaContainerService:
+  type: ClusterIP  # {{ .Values.katanaContainerService.type }}
+  port: 5050       # {{ .Values.katanaContainerService.port }}
+
+toriiContainerService:
+  type: ClusterIP  # {{ .Values.toriiContainerService.type }}
+  port: 8080       # {{ .Values.toriiContainerService.port }}
+
+grpcToriiContainerService:
+  type: ClusterIP  # {{ .Values.grpcToriiContainerService.type }}
+  port: 50051      # {{ .Values.grpcToriiContainerService.port }}
 
 domainName: oostvoort.work                # {{ .Values.domainName }}
 
 subDomainName: 
-  forkserver: forkserver.dev.aw                 # {{ .Values.subDomainName.forkserver }}
+  forkserver: forkserver.aw                 # {{ .Values.subDomainName.forkserver }}
+  katana: katana.forkserver.aw           # {{ .Values.subDomainName.katana }}
+  torii: torii.forkserver.aw             # {{ .Values.subDomainName.torii }}
+  grpcTorii: grpc.forkserver.aw    # {{ .Values.subDomainName.grpcTorii }}
 
 
 dockerImage: oostvoort/dojo-forkserver:latest
