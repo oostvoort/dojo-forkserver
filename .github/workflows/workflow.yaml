@@ -45,12 +45,12 @@ jobs:
 
       - name: push README to Dockerhub
         uses: christian-korneck/update-container-description-action@v1
-        # env:
-        #   DOCKER_USER: ${{ vars.DOCKERHUB_USERNAME}}
-        #   DOCKER_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
+        env:
+          DOCKER_USER: ${{ vars.DOCKERHUB_USERNAME}}
+          DOCKER_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
 
         with:
-          destination_container_repo: $REGISTRY/$PROJECTNAME
+          destination_container_repo: oostvoort/dojo-forkserver
           provider: dockerhub
           short_description: ''
           readme_file: 'README.md'
