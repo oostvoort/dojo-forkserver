@@ -44,19 +44,19 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
 
-      - name: Build, tag, and push image
-        id: build-image
-        run: |
-          docker build -t $REGISTRY/$PROJECTNAME:${VERSION} -t $REGISTRY/$PROJECTNAME:latest  .
-          docker push $REGISTRY/$PROJECTNAME:latest
-          docker push $REGISTRY/$PROJECTNAME:${VERSION}
+    #   - name: Build, tag, and push image
+    #     id: build-image
+    #     run: |
+    #       docker build -t $REGISTRY/$PROJECTNAME:${VERSION} -t $REGISTRY/$PROJECTNAME:latest  .
+    #       docker push $REGISTRY/$PROJECTNAME:latest
+    #       docker push $REGISTRY/$PROJECTNAME:${VERSION}
 
-
+      - name: Install docker-pushrm
+        run: docker run --rm cameron6/docker-pushrm --help
     
       - name: Push README to Docker Hub
-        run: |
-          curl -s -H "Authorization: JWT ${{ secrets.DOCKERHUB_TOKEN }}" -X PATCH --data-binary "README.md" https://hub.docker.com/v2/repositories/${REGISTRY}/${PROJECTNAME}/
-
+        run: docker run --rm cameron6/docker-pushrm ${REGISTRY}/${PROJECTNAME}:${VERSION}
+    
       - name: Deploy to ArgoCD
         id: deploy-image
         run: |
