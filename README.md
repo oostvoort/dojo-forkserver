@@ -1,4 +1,5 @@
 ![](https://raw.githubusercontent.com/oostvoort/dojo-forkserver/main/assets/logo.png)
+# TEST
 # Dojo Forkserver
 An open-sourced development tool specifically for Dojo. It's comprised of a Vite React WebApp
 that can control the RPC, an RPC called [Katana](https://book.dojoengine.org/toolchain/katana/overview.html),
