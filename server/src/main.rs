@@ -29,25 +29,24 @@ async fn run_command_manager(manager: CommandManager) {
     manager.start_command().await;
 }
 
-async fn run_deploy_contracts(katana_port: String, world_address: Arc<Mutex<String>>) {
+async fn run_deploy_contracts(
+    json_rpc_client: HttpClient,
+    katana_port: String,
+    world_address: Arc<Mutex<String>>
+) {
     let current_directory = current_dir().unwrap().to_str().unwrap().to_string();
-
     let contracts_dir = format!("{}/contracts", current_directory.clone());
-
+    let rpc_url = format!("http://localhost:{}", katana_port.clone());
     let world_address_inner: String;
 
     loop {
-        if is_port_open(katana_port.parse().unwrap()) {
+        if is_port_open(katana_port.clone().parse().unwrap()) {
             sleep(Duration::from_secs(1)).await
         } else {
-            let json_rpc_client = HttpClientBuilder::default()
-                .build("http://0.0.0.0:5050")
-                .unwrap();
-
             let accounts = get_accounts(json_rpc_client).await;
             let master = accounts.first().unwrap().clone();
 
-            world_address_inner = run_sozo(format!("{}/Scarb.toml", contracts_dir.clone()), &master.private_key, &master.address);
+            world_address_inner = run_sozo(katana_port.clone(), format!("{}/Scarb.toml", contracts_dir.clone()), &master.private_key, &master.address);
 
             let mut world_address_lock = world_address.lock().unwrap();
             *world_address_lock = world_address_inner.clone();
@@ -60,7 +59,8 @@ async fn run_deploy_contracts(katana_port: String, world_address: Arc<Mutex<Stri
                     "post_deploy",
                     &world_address_inner.clone(),
                     &master.private_key,
-                    &master.address
+                    &master.address,
+                    &rpc_url.clone()
                 ])
                 .spawn()
                 .expect("Default authorizations set");
@@ -72,9 +72,11 @@ async fn run_deploy_contracts(katana_port: String, world_address: Arc<Mutex<Stri
     let torii = CommandManager::new(
         "torii",
         Some(format!("\
+                --rpc {} \
                 --database-url sqlite:///{}/database/indexer.db \
                 -w {} \
                 --manifest {}/target/dev/manifest.json",
+                     rpc_url,
                      current_directory,
                      world_address_inner,
                      contracts_dir
@@ -98,16 +100,17 @@ async fn main() {
         Some(format!("-p {katana_port}")));
     let katana = task::spawn(run_command_manager(katana));
 
-    let deploy_contracts = task::spawn(
-        run_deploy_contracts(
-            katana_port.clone(),
-            Arc::clone(&world_address))
-    );
-
     // Build json rpc client
     let json_rpc_client = HttpClientBuilder::default()
         .build(format!("http://localhost:{katana_port}"))
         .unwrap();
+
+    let deploy_contracts = task::spawn(
+        run_deploy_contracts(
+            json_rpc_client.clone(),
+            katana_port.clone(),
+            Arc::clone(&world_address))
+    );
 
     let cors = CorsLayer::new()
         // allow `GET` and `POST` when accessing the resource

@@ -1,15 +1,141 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/assets/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dojo Fork Dashboard</title>
-    <meta property="og:image" content="https://raw.githubusercontent.com/oostvoort/conference-rs/main/ov_conf_logo.png" />
-    <meta property="og:description" content="An open-sourced dojo forkserver tool." />
+    <title>Dojo Forkserver</title>
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+    <style>
+        body {
+            font-family: 'Calibri', sans-serif;
+            padding: 20px;
+        }
+        img {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
 </head>
 <body>
-<h1>Welcome to the Dojo Forkserver</h1>
-<p>Click <a href="/fork">here</a> to visit the dashboard</p>
+<img src="/assets/logo.png" alt="Logo">
+<h1>Dojo Forkserver</h1>
+<p>An open-sourced development tool specifically for Dojo. It's comprised of a <a href="/fork">Vite React WebApp</a>
+    that can control the RPC, an RPC called <a href="https://book.dojoengine.org/toolchain/katana/overview.html">Katana</a>,
+    an automatic indexer known as <a href="https://book.dojoengine.org/toolchain/torii/overview.html">Torii</a>,
+    and an auto contracts deployment runner on runtime. This makes it so that developers don't need
+    to run Katana, Torii, and deploy their contracts on different processes. They can all happen
+    automatically in one docker container thereby simplifying the entire development process.</p>
+
+<h2>Getting Started</h2>
+<p>There are three ways to set up the Dojo-Forkserver:</p>
+
+<h2>Using Docker Compose (Recommended)</h2>
+
+<h3>Prerequisites</h3>
+<ol>
+    <li><a href="https://docs.docker.com/get-docker/">Docker</a></li>
+    <li><a href="https://docs.docker.com/compose/install/">Docker Compose Plugin</a></li>
+    <li><a href="https://book.dojoengine.org/getting-started/quick-start.html">Dojo</a></li>
+</ol>
+
+<h3>Environment Variables</h3>
+<p>There are several environment variables that can be set for the container.</p>
+<ol>
+    <li>SERVER_PORT - the port the server is hosted (defaults to 3000)</li>
+    <li>KATANA_PORT - the port Katana will run from (defaults to 5050)</li>
+</ol>
+
+<h3>Yaml File</h3>
+<p>Copy the following Yaml file into your project's root directory.</p>
+<pre><code>
+    services:
+      dojo-forkserver:
+        image: oostvoort/dojo-forkserver:latest
+        container_name: dojo-forkserver
+        ports:
+          - "5050:5050"
+          - "3000:3000"
+          - "8080:8080"
+          - "50051"
+        restart: unless-stopped
+        volumes:
+          - ./contracts:/opt/contracts
+        networks:
+          - pixelaw
+
+    networks:
+      pixelaw:
+        driver: bridge
+    </code></pre>
+
+<p>Mounting the contracts volume makes it so that it uses your dojo contracts instead of the
+    default ones. Take note that the dojo contracts have to be compiled before starting up the
+    container. To compile the contracts:</p>
+
+<pre><code>
+    # assuming that the contracts directory is in your root
+    cd contracts
+    sozo build
+    </code></pre>
+
+<h3>Setup</h3>
+<pre><code>
+    docker compose up -d
+    </code></pre>
+
+<h2>Using Docker CLI</h2>
+
+<h3>Prerequisites</h3>
+<ol>
+    <li><a href="https://docs.docker.com/get-docker/">Docker</a></li>
+    <li><a href="https://book.dojoengine.org/getting-started/quick-start.html">Dojo</a></li>
+</ol>
+
+<h3>Setup</h3>
+<p>Create the docker network</p>
+<pre><code>
+    docker network create --driver bridge pixelaw
+    </code></pre>
+
+<p>Run the container</p>
+<pre><code>
+    docker run -d --name=dojo-forkserver \
+      -p 5050:5050 \
+      -p 3000:3000 \
+      -p 8080:8080 \
+      -p 50051:50051 \
+      --restart unless-stopped \
+      -v $(pwd)/contracts:/opt/contracts \
+      --network=pixelaw \
+      oostvoort/dojo-forkserver:latest
+    </code></pre>
+
+<h2>Running the <a href="https://github.com/oostvoort/dojo-forkserver">repository</a> locally</h2>
+
+<h3>Prerequisites</h3>
+<ol>
+    <li>Install <a href="https://www.rust-lang.org/tools/install">Rust</a></li>
+    <li>Install <a href="https://nodejs.org/en/download">NodeJS</a></li>
+    <li>Install <a href="https://classic.yarnpkg.com/lang/en/docs/install/">Yarn</a></li>
+    <li>Install <a href="https://book.dojoengine.org/getting-started/installation.html">Dojo</a></li>
+</ol>
+
+<h3>Setup</h3>
+<h4>Run the server</h4>
+<pre><code>
+    cd server
+    cargo run
+    </code></pre>
+
+<h4>Install node modules</h4>
+<pre><code>
+    cd dashboard
+    yarn
+    </code></pre>
+
+<h4>Run the web app</h4>
+<pre><code>
+    cd dashboard
+    yarn dev
+    </code></pre>
 </body>
 </html>

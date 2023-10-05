@@ -1,7 +1,7 @@
 use std::env;
 use std::net::TcpListener;
 use std::process::{Child, Command, Stdio};
-use log::info;
+use log::{error, info};
 use tokio::sync::RwLock;
 use regex::Regex;
 
@@ -32,7 +32,7 @@ impl CommandManager {
         match spawned_command {
             Ok(spawned_command) => *handler = Some(spawned_command),
             Err(e) => {
-                println!("Could not spawn command {}", e.to_string())
+                error!("Could not spawn command {}", e.to_string())
             }
         }
 
@@ -88,11 +88,18 @@ pub fn is_port_open(port: u16) -> bool {
     }
 }
 
-pub fn run_sozo(manifest_path: String, private_key: &String, account_address: &String) -> String {
+pub fn run_sozo(
+    katana_port: String,
+    manifest_path: String,
+    private_key: &String,
+    account_address: &String
+) -> String {
 
     let output = Command::new("sozo")
         .args([
             "migrate",
+            "--rpc-url",
+            &format!("http://localhost:{}", katana_port),
             "--manifest-path",
             &manifest_path,
             "--private-key",
