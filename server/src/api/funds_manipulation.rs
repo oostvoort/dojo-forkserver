@@ -1,30 +1,51 @@
-use axum::Json;
+use axum::{Extension, Json};
 use axum::response::IntoResponse;
+use jsonrpsee_http_client::HttpClient;
 use serde::Deserialize;
+use crate::ServerState;
 
-#[allow(dead_code)]
 #[derive(Deserialize)]
 pub struct FundAddress {
     address: String,
     amount: f32,
-    token_address: Option<String>
+    token_address: Option<String>,
 }
 
-#[allow(dead_code)]
-async fn increase_token() -> impl IntoResponse {
+async fn increase_token(
+    _client: HttpClient,
+    _address: String,
+    _token_address:
+    String,
+    _amount: f32,
+) -> () {
     todo!()
 }
 
-#[allow(dead_code)]
-async fn increase_eth() -> impl IntoResponse {
+async fn increase_eth(
+    _client: HttpClient,
+    _address: String,
+    _amount: f32
+) -> () {
     todo!()
 }
 
-pub async fn handler(Json(_payload): Json<FundAddress>) -> impl IntoResponse {
-    // match payload.token_address {
-    //     None => increase_eth(),
-    //     Some(_) => increase_token()
-    // }
+pub async fn handler(
+    Extension(state): Extension<ServerState>,
+    Json(payload): Json<FundAddress>,
+) -> impl IntoResponse {
+    let json_rpc_client = &state.json_rpc_client;
 
-    todo!()
+    match payload.token_address {
+        None => increase_eth(
+            json_rpc_client.clone(),
+            payload.address,
+            payload.amount,
+        ).await,
+        Some(token_address) => increase_token(
+            json_rpc_client.clone(),
+            payload.address,
+            token_address,
+            payload.amount,
+        ).await
+    }
 }
