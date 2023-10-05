@@ -13,7 +13,10 @@ webappContainerService:
 domainName: oostvoort.work                # {{ .Values.domainName }}
 
 subDomainName: 
-  forkserver: forkserver.dev.aw                 # {{ .Values.subDomainName.forkserver }}
+  forkserver: forkserver.aw                 # {{ .Values.subDomainName.forkserver }}
+  katana: katana.forkserver.aw           # {{ .Values.subDomainName.katana }}
+  torii: torii.forkserver.aw             # {{ .Values.subDomainName.torii }}
+  grpcTorii: grpc.forkserver.aw    # {{ .Values.subDomainName.grpcTorii }}
 
 
 dockerImage: oostvoort/dojo-forkserver:latest
