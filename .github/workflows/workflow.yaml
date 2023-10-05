@@ -43,9 +43,17 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME}}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Install docker-pushrm
-        run: |
-         docker plugin install cameron6/docker-pushrm:1.0.0 --grant-all-permissions
+      - name: push README to Dockerhub
+        uses: christian-korneck/update-container-description-action@v1
+        # env:
+        #   DOCKER_USER: ${{ vars.DOCKERHUB_USERNAME}}
+        #   DOCKER_PASS: ${{ secrets.DOCKERHUB_TOKEN }}
+
+        with:
+          destination_container_repo: $REGISTRY/$PROJECTNAME
+          provider: dockerhub
+          short_description: ''
+          readme_file: 'README.md'
 
             
     #   - name: Build, tag, and push image
@@ -54,9 +62,6 @@ jobs:
     #       docker build -t $REGISTRY/$PROJECTNAME:${VERSION} -t $REGISTRY/$PROJECTNAME:latest  .
     #       docker push $REGISTRY/$PROJECTNAME:latest
     #       docker push $REGISTRY/$PROJECTNAME:${VERSION}
-
-      - name: Push README to Docker Hub
-        run: docker pushrm $REGISTRY/$PROJECTNAME:${VERSION}
 
     
       - name: Deploy to ArgoCD
