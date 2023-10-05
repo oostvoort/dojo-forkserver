@@ -1,0 +1,19 @@
+projectName: dojo-forkserver
+nameSpace: main
+appType:
+  frontend: webapp
+
+replicaSet: 1
+
+webappContainerService:
+  type: ClusterIP  # {{ .Values.webappContainerService.type }}
+  port: 3000       # {{ .Values.webappContainerService.port }}
+
+
+domainName: oostvoort.work                # {{ .Values.domainName }}
+
+subDomainName: 
+  forkserver: forkserver.dev.aw                 # {{ .Values.subDomainName.forkserver }}
+
+
+dockerImage: oostvoort/dojo-forkserver:latest
