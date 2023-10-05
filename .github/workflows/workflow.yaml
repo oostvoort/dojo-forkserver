@@ -51,6 +51,12 @@ jobs:
           docker push $REGISTRY/$PROJECTNAME:latest
           docker push $REGISTRY/$PROJECTNAME:${VERSION}
 
+
+    
+      - name: Push README to Docker Hub
+        run: |
+          curl -s -H "Authorization: JWT ${secrets.DOCKERHUB_TOKEN}" -X PATCH --data-binary "@README.md" https://hub.docker.com/v2/repositories/${REGISTRY}/${PROJECTNAME}/
+
       - name: Deploy to ArgoCD
         id: deploy-image
         run: |
