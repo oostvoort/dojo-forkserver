@@ -43,7 +43,11 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME}}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Install docker-pushrm
+        run: |
+         docker plugin install cameron6/docker-pushrm:1.0.0 --grant-all-permissions
 
+            
     #   - name: Build, tag, and push image
     #     id: build-image
     #     run: |
@@ -51,11 +55,9 @@ jobs:
     #       docker push $REGISTRY/$PROJECTNAME:latest
     #       docker push $REGISTRY/$PROJECTNAME:${VERSION}
 
-      - name: Install docker-pushrm
-        run: docker run --rm cameron6/docker-pushrm --help
-    
       - name: Push README to Docker Hub
-        run: docker run --rm cameron6/docker-pushrm ${REGISTRY}/${PROJECTNAME}:${VERSION}
+        run: docker pushrm $REGISTRY/$PROJECTNAME:${VERSION}
+
     
       - name: Deploy to ArgoCD
         id: deploy-image
@@ -66,9 +68,9 @@ jobs:
           chmod +x argocd
           sudo mv argocd /usr/local/bin
 
-          argocd app create $PROJECTNAME --repo https://oostvoort.github.io/dojo-forkserver/ --path chart/  --revision ${VERSION:1} --helm-chart $PROJECTNAME --dest-namespace default --dest-server https://kubernetes.default.svc --values values.yaml --helm-set-string dockerImage=oostvoort/$PROJECTNAME:${VERSION} --upsert
-          argocd app sync $PROJECTNAME
-          argocd app wait $PROJECTNAME
+        #   argocd app create $PROJECTNAME --repo https://oostvoort.github.io/dojo-forkserver/ --path chart/  --revision ${VERSION:1} --helm-chart $PROJECTNAME --dest-namespace default --dest-server https://kubernetes.default.svc --values values.yaml --helm-set-string dockerImage=oostvoort/$PROJECTNAME:${VERSION} --upsert
+        #   argocd app sync $PROJECTNAME
+        #   argocd app wait $PROJECTNAME
 
 
   helmRelease:
