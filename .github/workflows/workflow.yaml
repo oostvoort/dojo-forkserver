@@ -56,12 +56,12 @@ jobs:
           readme_file: 'README.md'
 
             
-    #   - name: Build, tag, and push image
-    #     id: build-image
-    #     run: |
-    #       docker build -t $REGISTRY/$PROJECTNAME:${VERSION} -t $REGISTRY/$PROJECTNAME:latest  .
-    #       docker push $REGISTRY/$PROJECTNAME:latest
-    #       docker push $REGISTRY/$PROJECTNAME:${VERSION}
+      - name: Build, tag, and push image
+        id: build-image
+        run: |
+          docker build -t $REGISTRY/$PROJECTNAME:${VERSION} -t $REGISTRY/$PROJECTNAME:latest  .
+          docker push $REGISTRY/$PROJECTNAME:latest
+          docker push $REGISTRY/$PROJECTNAME:${VERSION}
 
     
       - name: Deploy to ArgoCD
@@ -73,9 +73,9 @@ jobs:
           chmod +x argocd
           sudo mv argocd /usr/local/bin
 
-        #   argocd app create $PROJECTNAME --repo https://oostvoort.github.io/dojo-forkserver/ --path chart/  --revision ${VERSION:1} --helm-chart $PROJECTNAME --dest-namespace default --dest-server https://kubernetes.default.svc --values values.yaml --helm-set-string dockerImage=oostvoort/$PROJECTNAME:${VERSION} --upsert
-        #   argocd app sync $PROJECTNAME
-        #   argocd app wait $PROJECTNAME
+          argocd app create $PROJECTNAME --repo https://oostvoort.github.io/dojo-forkserver/ --path chart/  --revision ${VERSION:1} --helm-chart $PROJECTNAME --dest-namespace default --dest-server https://kubernetes.default.svc --values values.yaml --helm-set-string dockerImage=oostvoort/$PROJECTNAME:${VERSION} --upsert
+          argocd app sync $PROJECTNAME
+          argocd app wait $PROJECTNAME
 
 
   helmRelease:
