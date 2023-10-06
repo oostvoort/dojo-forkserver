@@ -11,7 +11,7 @@ use axum::http::Method;
 use axum::response::Response;
 use axum::routing::{get, on, get_service, MethodFilter};
 use jsonrpsee_http_client::{HttpClient, HttpClientBuilder};
-use log::debug;
+use log::{debug, error};
 use tokio::task;
 use tokio::time::sleep;
 use tower_http::add_extension::AddExtensionLayer;
@@ -34,58 +34,67 @@ async fn run_deploy_contracts(
     katana_port: String,
     world_address: Arc<Mutex<String>>
 ) {
-    let current_directory = current_dir().unwrap().to_str().unwrap().to_string();
-    let contracts_dir = format!("{}/contracts", current_directory.clone());
-    let scarb_dir = format!("{}/Scarb.toml", contracts_dir.clone());
-    let rpc_url = format!("http://localhost:{}", katana_port.clone());
-    let world_address_inner: String;
+    let current_directory = current_dir()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+    let (contracts_dir, scarb_dir, rpc_url) =
+        (format!("{}/contracts", &current_directory),
+         format!("{}/contracts/Scarb.toml", &current_directory),
+         format!("http://localhost:{}", &katana_port));
 
     loop {
         if is_port_open(katana_port.parse().unwrap()) {
-            sleep(Duration::from_secs(1)).await
+            sleep(Duration::from_secs(1)).await;
         } else {
-            let accounts = get_accounts(json_rpc_client).await;
-            let master = accounts.first().unwrap().clone();
+            match get_accounts(&json_rpc_client).await.first() {
+                Some(master) => {
+                    let world_address_inner = run_sozo(&katana_port, &scarb_dir, &master.private_key, &master.address);
 
-            world_address_inner = run_sozo(katana_port.clone(), scarb_dir.clone(), &master.private_key, &master.address);
+                    if let Ok(mut world_address_lock) = world_address.lock() {
+                        *world_address_lock = world_address_inner.clone();
+                    }
 
-            let mut world_address_lock = world_address.lock().unwrap();
-            *world_address_lock = world_address_inner.clone();
+                    Command::new("scarb")
+                        .args([
+                            "--manifest-path",
+                            &scarb_dir,
+                            "run",
+                            "post_deploy",
+                            &world_address_inner,
+                            &master.private_key,
+                            &master.address,
+                            &rpc_url
+                        ])
+                        .spawn()
+                        .expect("Default authorizations set");
 
-            Command::new("scarb")
-                .args([
-                    "--manifest-path",
-                    &scarb_dir,
-                    "run",
-                    "post_deploy",
-                    &world_address_inner.clone(),
-                    &master.private_key,
-                    &master.address,
-                    &rpc_url.clone()
-                ])
-                .spawn()
-                .expect("Default authorizations set");
+                    let torii = CommandManager::new(
+                        "torii",
+                        Some(format!("\
+                            --rpc {} \
+                            --database-url sqlite:///{}/database/indexer.db \
+                            -w {} \
+                            --manifest {}/target/dev/manifest.json",
+                                     rpc_url,
+                                     current_directory,
+                                     world_address_inner,
+                                     contracts_dir
+                        ))
+                    );
 
-            break
+                    torii.start_command().await;
+                },
+                None => error!("Account not found"),
+            }
+
+            break;
         }
-    };
-
-    let torii = CommandManager::new(
-        "torii",
-        Some(format!("\
-                --rpc {} \
-                --database-url sqlite:///{}/database/indexer.db \
-                -w {} \
-                --manifest {}/target/dev/manifest.json",
-                     rpc_url,
-                     current_directory,
-                     world_address_inner,
-                     contracts_dir
-        ))
-    );
-
-    torii.start_command().await
+    }
 }
+
+
 
 #[tokio::main]
 async fn main() {
@@ -155,7 +164,6 @@ async fn main() {
         .unwrap();
 
     // Cancel the command manager task when the server stops
-    // TODO will also need to make sure that katana and torii stops
     katana.abort();
     deploy_contracts.abort();
 }

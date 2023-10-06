@@ -17,7 +17,7 @@ pub struct Account {
     pub class_hash: String
 }
 
-pub async fn get_accounts(client: HttpClient) -> Vec<Account> {
+pub async fn get_accounts(client: &HttpClient) -> Vec<Account> {
     client.request::<Vec<Account>, ArrayParams>(
         "katana_predeployedAccounts",
         ArrayParams::default()
@@ -27,6 +27,6 @@ pub async fn get_accounts(client: HttpClient) -> Vec<Account> {
 pub async fn handler(Extension(state): Extension<ServerState>) -> impl IntoResponse {
     let json_rpc_client = &state.json_rpc_client;
 
-    let accounts = get_accounts(json_rpc_client.clone()).await;
+    let accounts = get_accounts(json_rpc_client).await;
     Json(json!(accounts))
 }

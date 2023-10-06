@@ -89,8 +89,8 @@ pub fn is_port_open(port: u16) -> bool {
 }
 
 pub fn run_sozo(
-    katana_port: String,
-    manifest_path: String,
+    katana_port: &String,
+    manifest_path: &String,
     private_key: &String,
     account_address: &String
 ) -> String {
@@ -101,7 +101,7 @@ pub fn run_sozo(
             "--rpc-url",
             &format!("http://localhost:{}", katana_port),
             "--manifest-path",
-            &manifest_path,
+            manifest_path,
             "--private-key",
             private_key,
             "--account-address",
