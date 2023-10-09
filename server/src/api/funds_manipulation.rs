@@ -12,7 +12,7 @@ pub struct FundAddress {
 }
 
 async fn increase_token(
-    _client: HttpClient,
+    _client: &HttpClient,
     _address: String,
     _token_address:
     String,
@@ -22,7 +22,7 @@ async fn increase_token(
 }
 
 async fn increase_eth(
-    _client: HttpClient,
+    _client: &HttpClient,
     _address: String,
     _amount: f32
 ) -> () {
@@ -37,12 +37,12 @@ pub async fn handler(
 
     match payload.token_address {
         None => increase_eth(
-            json_rpc_client.clone(),
+            json_rpc_client,
             payload.address,
             payload.amount,
         ).await,
         Some(token_address) => increase_token(
-            json_rpc_client.clone(),
+            json_rpc_client,
             payload.address,
             token_address,
             payload.amount,
