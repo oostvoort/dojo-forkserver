@@ -12,12 +12,13 @@ use axum::response::Response;
 use axum::routing::{get, on, get_service, MethodFilter};
 use jsonrpsee_http_client::{HttpClient, HttpClientBuilder};
 use log::{debug, error};
+use serde::de::Error;
 use tokio::task;
 use tokio::time::sleep;
 use tower_http::add_extension::AddExtensionLayer;
 use tower_http::services::{ServeDir, ServeFile};
 use tower_http::cors::{Any, CorsLayer};
-use server::{CommandManager, get_env, is_port_open, run_sozo};
+use server::{CommandManager, extract_contract_args, get_env, is_port_open, run_sozo};
 use crate::api::accounts_manipulation::get_accounts;
 
 #[derive(Clone)]
@@ -39,8 +40,8 @@ async fn run_deploy_contracts(
         .to_str()
         .unwrap()
         .to_string();
-    let (contracts_dir, scarb_dir, rpc_url) =
-        (format!("{}/contracts", &current_directory),
+    let (manifest_json, scarb_dir, rpc_url) =
+        (format!("{}/contracts/target/dev/manifest.json", &current_directory),
          format!("{}/contracts/Scarb.toml", &current_directory),
          format!("http://localhost:{}", &katana_port));
 
@@ -50,23 +51,47 @@ async fn run_deploy_contracts(
         } else {
             match get_accounts(&json_rpc_client).await.first() {
                 Some(master) => {
-                    let world_address_inner = run_sozo(&katana_port, &scarb_dir, &master.private_key, &master.address);
+                    let world_address_inner = match run_sozo(&katana_port, &manifest_json, &scarb_dir, &master.private_key, &master.address){
+                        Ok(address) => address,
+                        Err(e) => {
+                            println!("Could not migrate contracts: {}", e.to_string());
+                            error!("Could not migrate contracts: {}", e.to_string());
+
+                            String::new()
+                        }
+                    };
+
+                    if world_address_inner.is_empty() {
+                        break
+                    }
 
                     if let Ok(mut world_address_lock) = world_address.lock() {
                         *world_address_lock = world_address_inner.clone();
                     }
 
+
+                    // TODO: fix this...not getting combined correctly
+                    let systems = extract_contract_args(&manifest_json);
+
+                    let mut base_args = vec![
+                        "--manifest-path",
+                        &scarb_dir,
+                        "run",
+                        "post_deploy",
+                        &format!("WORLD_ADDRESS={}", &world_address_inner),
+                        &format!("PRIVATE_KEY={}", &master.private_key),
+                        &format!("ACCOUNT_ADDRESS={}", &master.address),
+                        &format!("RPC_URL={}", &rpc_url),
+                    ];
+
+                    if let Ok(systems) = systems {
+                        let systems: Vec<&str> = systems.iter().map(|system| system.as_str()).collect();
+                        base_args.extend(systems)
+                    }
+
+
                     Command::new("scarb")
-                        .args([
-                            "--manifest-path",
-                            &scarb_dir,
-                            "run",
-                            "post_deploy",
-                            &world_address_inner,
-                            &master.private_key,
-                            &master.address,
-                            &rpc_url
-                        ])
+                        .args(base_args)
                         .spawn()
                         .expect("Default authorizations set");
 
@@ -75,12 +100,10 @@ async fn run_deploy_contracts(
                         Some(format!("\
                             --rpc {} \
                             --database-url sqlite:///{}/database/indexer.db \
-                            -w {} \
-                            --manifest {}/target/dev/manifest.json",
+                            -w {}",
                                      rpc_url,
                                      current_directory,
-                                     world_address_inner,
-                                     contracts_dir
+                                     world_address_inner
                         ))
                     );
 
