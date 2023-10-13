@@ -94,7 +94,7 @@ async fn run_deploy_contracts(
                         "torii",
                         Some(format!("\
                             --rpc {} \
-                            --database-url sqlite:///{}/database/indexer.db \
+                            --database sqlite:///{}/indexer.db \
                             -w {}",
                                      rpc_url,
                                      current_directory,
