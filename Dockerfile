@@ -15,15 +15,6 @@ COPY ./dashboard/package.json ./dashboard/yarn.lock ./
 # Install dependencies
 RUN yarn install --frozen-lockfile
 
-# Now copy all the sources so we can compile
-FROM node:18-alpine AS node_builder
-WORKDIR /app
-COPY ./dashboard .
-COPY --from=node_deps /app/node_modules ./node_modules
-
-# Build the webapp
-RUN yarn build --mode production
-
 FROM rust:1 AS chef
 # We only pay the installation cost once,
 # it will be cached from the second build onwards
@@ -58,13 +49,34 @@ COPY ./server/Cargo.toml /app/server/Cargo.toml
 # Build the binary
 RUN cargo build --release
 
-FROM oostvoort/dojo:v0.2.3
+# Now copy all the sources so we can compile
+FROM node:18-alpine AS node_builder
+WORKDIR /app
+COPY ./dashboard .
+COPY --from=node_deps /app/node_modules ./node_modules
+
+# Build the webapp
+RUN yarn build --mode production
+
+# Build the contracts
+FROM oostvoort/dojo:v0.2.3 as contracts_builder
+
+WORKDIR /app
+
+COPY ./server/contracts .
+RUN sozo build
+
+FROM oostvoort/dojo:v0.2.3 as runtime
 
 WORKDIR /opt
 
 COPY --from=builder /app/server/target/release/server .
 COPY ./server/static ./static
-COPY ./server/contracts ./contracts
+
+COPY ./server/contracts/Scarb.toml ./contracts/Scarb.toml
+COPY ./server/contracts/scripts ./contracts/scripts
+COPY --from=contracts_builder /app/target ./contracts/target/
+
 COPY --from=node_builder /app/dist ./static/fork
 COPY --from=database_builder /app/database ./database
 
