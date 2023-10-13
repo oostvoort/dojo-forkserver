@@ -182,6 +182,16 @@ entries:
     - https://github.com/oostvoort/dojo-forkserver/releases/download/dojo-forkserver-1.1.5/dojo-forkserver-1.1.5.tgz
     version: 1.1.5
   - apiVersion: v2
+    appVersion: 0.2.2
+    created: "2023-10-13T06:39:40.541225204Z"
+    description: A Helm chart for Kubernetes
+    digest: 41ae2fef08eaa8734b617f5a6ab0aec8fef89ff022c96c20e6d9787b707fc800
+    name: dojo-forkserver
+    type: application
+    urls:
+    - https://github.com/oostvoort/dojo-forkserver/releases/download/dojo-forkserver-0.2.2/dojo-forkserver-0.2.2.tgz
+    version: 0.2.2
+  - apiVersion: v2
     appVersion: 0.2.1
     created: "2023-10-13T05:50:36.800180355Z"
     description: A Helm chart for Kubernetes
@@ -191,4 +201,4 @@ entries:
     urls:
     - https://github.com/oostvoort/dojo-forkserver/releases/download/dojo-forkserver-0.2.1/dojo-forkserver-0.2.1.tgz
     version: 0.2.1
-generated: "2023-10-13T05:50:36.800542756Z"
+generated: "2023-10-13T06:39:40.541510913Z"
