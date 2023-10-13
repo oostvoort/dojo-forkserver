@@ -3,7 +3,6 @@ use std::fs::File;
 use std::net::TcpListener;
 use std::process::{Child, Command, Stdio};
 use log::{error, info};
-use regex::bytes::RegexSet;
 use tokio::sync::RwLock;
 use serde_json::Value;
 use thiserror::Error;

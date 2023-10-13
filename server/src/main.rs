@@ -12,7 +12,6 @@ use axum::response::Response;
 use axum::routing::{get, on, get_service, MethodFilter};
 use jsonrpsee_http_client::{HttpClient, HttpClientBuilder};
 use log::{debug, error};
-use serde::de::Error;
 use tokio::task;
 use tokio::time::sleep;
 use tower_http::add_extension::AddExtensionLayer;
