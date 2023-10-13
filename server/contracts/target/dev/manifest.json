@@ -2,7 +2,7 @@
   "world": {
     "name": "world",
     "address": null,
-    "class_hash": "0x1527b232cbd77c7f021fdc129339d7623edfd9a9c79a1b9add29c9064961497",
+    "class_hash": "0x2f857fd574c566f9bea8587569d016036377e028f0d47f6e31b4518ee605cd1",
     "abi": [
       {
         "type": "impl",
@@ -535,7 +535,7 @@
   "executor": {
     "name": "executor",
     "address": null,
-    "class_hash": "0x7b79892389a0c9fe22f74b1d28a9e9185c7b6d2c60cc1df814053e47e9078c2",
+    "class_hash": "0x24caf320f4df7648b6f150df66c16c62f51bcba009daecfec1f7622007ad04c",
     "abi": [
       {
         "type": "impl",
@@ -620,7 +620,7 @@
         }
       ],
       "outputs": [],
-      "class_hash": "0x317a54b3dd5d03ba1804eeaeba103e44a1b7ce68a22ccdb49b325989cbcc1ca",
+      "class_hash": "0x18f7ecccb50f578b2112a12986b1d32700aa6522cb25bc7c71300df603eaf4",
       "dependencies": [],
       "abi": [
         {
@@ -677,12 +677,6 @@
           ],
           "outputs": [],
           "state_mutability": "view"
-        },
-        {
-          "type": "event",
-          "name": "dojo_examples::systems::spawn::Event",
-          "kind": "enum",
-          "variants": []
         }
       ]
     },
@@ -699,7 +693,7 @@
         }
       ],
       "outputs": [],
-      "class_hash": "0x3cfa8a0af0102bc71e0f01eb70f7cb61244facd67bb8827a88907e6916f997c",
+      "class_hash": "0x29e98907863f35719a651471b7baa4225d82185995d3f7c371c88c65ce1661f",
       "dependencies": [],
       "abi": [
         {
@@ -782,12 +776,6 @@
           ],
           "outputs": [],
           "state_mutability": "view"
-        },
-        {
-          "type": "event",
-          "name": "dojo_examples::systems::move::Event",
-          "kind": "enum",
-          "variants": []
         }
       ]
     },
@@ -816,7 +804,7 @@
           "type": "core::array::Span::<core::felt252>"
         }
       ],
-      "class_hash": "0x5c3f8568adfef908692f02fcfcc80e303c237183fe864f6cff8c34d29d3f130",
+      "class_hash": "0x3687cba423875df72318e609c4a5584b222862e01f624e80011c67b18661ae1",
       "dependencies": [],
       "abi": [
         {
@@ -925,7 +913,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x5baa2a6749eebb5c2206c497a31c760455709e37f42bec5a7418bb98126d284",
+      "class_hash": "0x74c8a6b2e93b4a34788c23eb3d931da62d5a973ef66ba0a671de41b1607a9a4",
       "abi": [
         {
           "type": "function",
@@ -1001,7 +989,7 @@
           "key": false
         }
       ],
-      "class_hash": "0x4973c97a1cd5e141d6dfe05c36517234851118ea703e510fcb72a39a092c228",
+      "class_hash": "0x6a8ab7eb5689bed6f0e9fb63d2565411830e1725aca7299f5f512d375d9a28c",
       "abi": [
         {
           "type": "function",

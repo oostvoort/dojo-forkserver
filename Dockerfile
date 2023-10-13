@@ -58,7 +58,7 @@ COPY ./server/Cargo.toml /app/server/Cargo.toml
 # Build the binary
 RUN cargo build --release
 
-FROM oostvoort/dojo:v0.2.2
+FROM oostvoort/dojo:v0.2.3
 
 WORKDIR /opt
 
