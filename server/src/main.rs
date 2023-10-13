@@ -69,26 +69,22 @@ async fn run_deploy_contracts(
                         *world_address_lock = world_address_inner.clone();
                     }
 
-
-                    // TODO: fix this...not getting combined correctly
                     let systems = extract_contract_args(&manifest_json);
 
                     let mut base_args = vec![
-                        "--manifest-path",
-                        &scarb_dir,
-                        "run",
-                        "post_deploy",
-                        &format!("WORLD_ADDRESS={}", &world_address_inner),
-                        &format!("PRIVATE_KEY={}", &master.private_key),
-                        &format!("ACCOUNT_ADDRESS={}", &master.address),
-                        &format!("RPC_URL={}", &rpc_url),
+                        "--manifest-path".to_string(),
+                        scarb_dir.clone(),
+                        "run".to_string(),
+                        "post_deploy".to_string(),
+                        format!("WORLD_ADDRESS={}", &world_address_inner),
+                        format!("PRIVATE_KEY={}", &master.private_key),
+                        format!("ACCOUNT_ADDRESS={}", &master.address),
+                        format!("RPC_URL={}", &rpc_url),
                     ];
 
                     if let Ok(systems) = systems {
-                        let systems: Vec<&str> = systems.iter().map(|system| system.as_str()).collect();
-                        base_args.extend(systems)
+                        base_args.extend(systems);
                     }
-
 
                     Command::new("scarb")
                         .args(base_args)
