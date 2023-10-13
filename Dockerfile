@@ -59,6 +59,7 @@ COPY ./server/Cargo.toml /app/server/Cargo.toml
 RUN cargo build --release
 
 FROM oostvoort/dojo:v0.3.0-rc8
+RUN dojoup -v v0.3.0-rc8
 
 WORKDIR /opt
 
