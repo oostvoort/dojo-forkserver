@@ -166,7 +166,7 @@ async fn main() {
         .route("/api/block", on(MethodFilter::POST, api::block_manipulation::handler))
         .nest_service("/fork/assets", get_service(ServeDir::new("./static/fork/assets")))
         .nest_service("/fork", get_service(ServeFile::new("./static/fork/index.html")))
-        .nest_service("/assets/manifest.json", get_service(ServeFile::new("./contracts/target/dev/manifest.json")))
+        .nest_service("/world/manifest.json", get_service(ServeFile::new("./contracts/target/dev/manifest.json")))
         .nest_service("/assets", get_service(ServeDir::new("./static/assets")))
         .fallback_service(get_service(ServeFile::new("./static/index.html")))
         .layer(cors)
