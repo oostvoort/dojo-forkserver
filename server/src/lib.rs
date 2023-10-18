@@ -1,9 +1,47 @@
 use std::env;
+use std::fs::File;
 use std::net::TcpListener;
 use std::process::{Child, Command, Stdio};
 use log::{error, info};
 use tokio::sync::RwLock;
-use regex::Regex;
+use serde_json::Value;
+use thiserror::Error;
+use serde::Deserialize;
+
+// Define a struct to represent the JSON data structure
+#[derive(Deserialize, Debug)]
+struct Contract {
+    name: String,
+    address: String,
+}
+
+#[derive(Deserialize, Debug)]
+struct Data {
+    contracts: Vec<Contract>,
+}
+
+#[derive(Error, Debug)]
+pub enum ForkServerError {
+    #[error("sozo migrate failed")]
+    SozoMigrateFailed,
+
+    #[error("world address not found")]
+    WorldAddressNotFound
+}
+
+// Implement From for your error
+impl From<std::io::Error> for ForkServerError {
+    fn from(_: std::io::Error) -> ForkServerError {
+        ForkServerError::WorldAddressNotFound
+    }
+}
+
+// Implement From for your error
+impl From<serde_json::Error> for ForkServerError {
+    fn from(_: serde_json::Error) -> ForkServerError {
+        ForkServerError::WorldAddressNotFound
+    }
+}
 
 pub struct CommandManager {
     command: RwLock<Command>,
@@ -90,12 +128,13 @@ pub fn is_port_open(port: u16) -> bool {
 
 pub fn run_sozo(
     katana_port: &String,
+    manifest_json: &String,
     manifest_path: &String,
     private_key: &String,
     account_address: &String
-) -> String {
+) -> Result<String, ForkServerError> {
 
-    let output = Command::new("sozo")
+    match Command::new("sozo")
         .args([
             "migrate",
             "--rpc-url",
@@ -109,24 +148,39 @@ pub fn run_sozo(
         ])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .output().unwrap();
+        .output() {
+        Ok(_) => {
+            // Open the file
+            let file = File::open(manifest_json)?;
 
-    // Capture the stdout and stderr as strings
-    let stdout = String::from_utf8_lossy(&output.stdout);
+            // Deserialize the JSON content
+            let data: Value = serde_json::from_reader(file)?;
 
-    let mut starting_index = 0_usize;
-
-    let to_look_for = "at address ";
-
-    if let Some(index) = stdout.find(to_look_for) {
-        starting_index = index;
+            // Extract the "world" object and then the "address" property
+            match data.get("world") {
+                Some(world) => match world.get("address") {
+                    Some(address) => Ok(address.as_str().unwrap().to_string()),
+                    None => Err(ForkServerError::WorldAddressNotFound),
+                },
+                None => Err(ForkServerError::WorldAddressNotFound),
+            }
+        }
+        Err(_) => Err(ForkServerError::SozoMigrateFailed)
     }
+}
 
-    let world_address = &stdout[starting_index + to_look_for.len()..];
+pub fn extract_contract_args(manifest_json_path: &str) -> serde_json::Result<Vec<String>> {
+    // Open the file
+    let file = File::open(manifest_json_path).expect("could not open file");
 
-    // Create a regex pattern to match one or more whitespace characters
-    let re = Regex::new(r"\s+").unwrap();
+    // Deserialize the JSON content
+    let data: Data = serde_json::from_reader(file)?;
 
-    // Replace multiple whitespace characters with a single space
-    re.replace_all(world_address, "").to_string()
+    // Transform the contracts into the desired format
+    let transformed: Vec<String> = data.contracts
+        .into_iter()
+        .map(|contract| format!("{}={}", contract.name, contract.address))
+        .collect();
+
+    Ok(transformed)
 }

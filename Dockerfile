@@ -1,10 +1,3 @@
-FROM rust:1 AS database_builder
-WORKDIR /app
-COPY ./server/database ./database
-
-RUN cargo install sqlx-cli
-RUN bash ./database/scripts/reset_db.sh
-
 FROM node:18-alpine AS node_deps
 
 WORKDIR /app
@@ -58,7 +51,7 @@ COPY ./server/Cargo.toml /app/server/Cargo.toml
 # Build the binary
 RUN cargo build --release
 
-FROM oostvoort/dojo:v0.2.3
+FROM oostvoort/dojo:v0.3.0-rc9
 
 WORKDIR /opt
 
@@ -66,6 +59,5 @@ COPY --from=builder /app/server/target/release/server .
 COPY ./server/static ./static
 COPY ./server/contracts ./contracts
 COPY --from=node_builder /app/dist ./static/fork
-COPY --from=database_builder /app/database ./database
 
 CMD ["/opt/server"]
