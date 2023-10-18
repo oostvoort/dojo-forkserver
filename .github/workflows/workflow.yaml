@@ -116,7 +116,7 @@ jobs:
           VERSION=${{github.ref_name}}
           rm -rf .cr-release-packages
           mkdir -p .cr-release-packages
-          helm package chart/abc --app-version=${VERSION:1} --version=${VERSION:1} --destination=.cr-release-packages
+          helm package chart/dojo-forkserver --app-version=${VERSION:1} --version=${VERSION:1} --destination=.cr-release-packages
 
       - name: Run Helm chart-releaser
         # switch back to helm/chart-releaser-action if this contribution is ever mergedd
