@@ -125,7 +125,7 @@ async fn main() {
 
     let katana = CommandManager::new(
         "katana",
-        Some(format!("-p {katana_port}")));
+        Some(format!("-p {katana_port} --dev")));
     let katana = task::spawn(run_command_manager(katana));
 
     // Build json rpc client
